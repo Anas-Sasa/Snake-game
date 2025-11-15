@@ -105,7 +105,7 @@ class Score(Turtle):
         self.clear()
 
         # Write the updated current score  and last score at the current location
-        self.write(f"Game score: {self.score} :|: Last highest score: {self.read_file_score()}", align= "center", font=("Arial", 20, "normal"))
+        self.write(f"Current score: {self.score} / Last highest score: {self.read_file_score()}", align= "center", font=("Arial", 20, "normal"))
 
 
     # Display the game-over screen

@@ -51,6 +51,9 @@ clear_terminal()
 # Reusable Food instance used to write temporary messages on screen
 WRITE_MESSAGE = Food(color="lavender")
 
+# To check of the user clicks on "X" window to exit
+is_on_close = False
+
 # Drawing a welcome message
 def show_start_screen(window):
     """
@@ -81,6 +84,17 @@ def show_start_screen(window):
     sleep(3)
     t.clear()
 
+# Displays the end message 
+def show_goodbye_message(window):
+    """
+    Changes the window color to black and write a goodbye message  
+    """
+    window.clear()
+    window.bgcolor("black")
+
+    WRITE_MESSAGE.write("See you later....👋", align="center", font=("Arial", 20, "italic"))
+
+
 # Initializing the game
 def main():
     """
@@ -97,6 +111,8 @@ def main():
 
     # game_on: flag that controls the main game loop; True while a round is active.
     global game_on
+
+    game_on = True
     
     # Create and configure the window
     WINDOW = Screen()
@@ -106,18 +122,35 @@ def main():
     WINDOW.tracer(0)  # manual updates for smoother animation
 
     # Prompt player for a snake speed between 10 and 20 (inclusive)
-    speed = str(WINDOW.textinput("Speed of Snake!", "Enter speed of snake from [10] to [20] <<!!! "))
+    speed = WINDOW.textinput("Speed of Snake!", "Enter speed of snake from [10] to [20] <<!!! ")
 
-    # Validate input: must be a number and in the allowed range
-    while not speed.isdigit() or int(speed) > 20 or int(speed) < 10:
+    # Check if user clicks "Cancle" on the message prompt
+    if speed is None:
 
-        WRITE_MESSAGE.write("Enter only numbers [ from 10 to 20 ]", align="center", font=("Arial", 15, "italic"))
+        show_goodbye_message(window= WINDOW)
 
-        WINDOW.update()
-        sleep(3)
-        WRITE_MESSAGE.clear()
+        # Sotp game
+        return False
+    
+    else:
 
-        speed = str(WINDOW.textinput("Speed of Snake!", "Enter speed of snake from [ 10 to 20 ] <<<||"))
+        # Validate input: must be a number and in the allowed range
+        while not str(speed).isdigit() or int(str(speed)) > 20 or int(str(speed)) < 10:
+            
+            WRITE_MESSAGE.write("Enter only numbers [ from 10 to 20 ]", align="center", font=("Arial", 15, "italic"))
+
+            WINDOW.update()
+            sleep(3)
+            WRITE_MESSAGE.clear()
+
+            speed = WINDOW.textinput("Speed of Snake!", "Enter speed of snake from [ 10 to 20 ] <<<||")
+
+    # Check if user clicks "Cancle" on the message prompt
+            if speed is None:
+
+                show_goodbye_message(window= WINDOW)
+                # Stop game
+                return False
 
 
     # Get the underlying Tkinter Toplevel window object from the turtle Screen.
@@ -129,27 +162,22 @@ def main():
         
         # Re-declare globals we will modify inside this function.
         global game_on 
+        global is_on_close
+        
 
         # If the game is already stopped (game_on is False), then destroy the Tk window.
         # This performs the actual window tear-down and frees GUI resources.
-        if not game_on:
+        if not game_on and is_on_close:
             tk_window.destroy()
 
         else:
+            show_goodbye_message(window= WINDOW)
 
-            # If the game is still running (the first click on "X"), do a graceful shutdown sequence instead of
-            # immediately destroying the window. This avoids errors from other callbacks
-            # attempting to use the window after it is destroyed.
-            WINDOW.clear()
-            WINDOW.bgcolor("black")
 
-            # Show a message instructing the user how to exit (e.g., click again)
-            WRITE_MESSAGE.goto(0, 220)
-            WRITE_MESSAGE.write("Click On Screen To Exit...", font= ("courier", 25, "normal"), align= "center")
-        
         # Mark the game as stopped and the program as not running any active round.
         # The rest of the program should observe these flags and stop scheduling callbacks.
         game_on = False
+        is_on_close = True
     
     # Register the on_close handler for the window manager close event.
     # After this, clicking the window X will call on_close() instead of auto-destroying.
@@ -166,8 +194,6 @@ def main():
 
     # Place the first food pellet
     food.apear_food()
-
-    game_on = True
 
     # Main game loop
     while game_on:
@@ -206,7 +232,9 @@ def main():
                 if snake.head.distance(segment) < 10:
 
                     game_on = False
+
                     sleep(2)
+
                     snake.hide_snake()
                     score.hide_score()
                     food.hide_food()
@@ -224,45 +252,52 @@ def main():
     # Clear current snake segments before potential restart
     snake.turtles = []
 
-    return game_on
+    if is_on_close:
+
+        return False
+    else:
+        return True
 
 # Start the first game
-if main():
+if main(): # main returns a value of [ is_on_close() ]
+
 
     is_new_game = True
+
     # If running game still running
     # After a round ends, prompt the player to start a new game or exit
-    while is_new_game and main:
+    while is_new_game:
 
-        new_game = WINDOW.textinput("New Game! ", "Do you want to play again? Type [ Y ] to start or [ N ] to exit!")
+        if not is_on_close:
+           
+            new_game = WINDOW.textinput("New Game! ", "Do you want to play again? Type [ Y ] to start or [ N ] to exit!")
 
-        if str(new_game).lower() == "y":
+            if str(new_game).lower() == "y":
 
-            WINDOW.clear()
+                WINDOW.clear()
 
-            # Check if the game stil runnig
-            if not main():
+                # Check if the game stil runnig
+                main()
+
+            elif str(new_game).lower() == "n" or new_game is None:
+
+                show_goodbye_message(window= WINDOW)
+
                 is_new_game = False
 
-        elif str(new_game).lower() == "n":
+            else:
+                # Invalid entry: show message briefly and prompt again
+                WINDOW.clear()
+                WINDOW.bgcolor("black")
 
-            WINDOW.clear()
-            WINDOW.bgcolor("black")
+                WRITE_MESSAGE.write(f"Invalid entry: [ {new_game} ]\nEnter [ Y or N ]", align="center", font=("Arial", 15, "italic"))
+                WINDOW.update()
 
-            WRITE_MESSAGE.write("See you later....👋", align="center", font=("Arial", 20, "italic"))
-            is_new_game = False
+                sleep(3)
+                WRITE_MESSAGE.clear()
 
         else:
-            # Invalid entry: show message briefly and prompt again
-            WINDOW.clear()
-            WINDOW.bgcolor("black")
-
-            WRITE_MESSAGE.write(f"Invalid entry: [ {new_game} ]\nEnter [ Y or N ]", align="center", font=("Arial", 15, "italic"))
-            WINDOW.update()
-
-            sleep(3)
-            WRITE_MESSAGE.clear()
-
+             is_new_game = False
 
 # Keep the window open until closed by the user
 WINDOW.exitonclick()
@@ -289,11 +324,11 @@ WINDOW.exitonclick()
 
 # ---------------------------------------------------------------------------------
 
-# To fix next time!
+# To fix next time! [ Done !! ]
 
-# the destroy of GUI:
+# the destroy of GUI:   [ Done !! ]
 
-# When there is collision border or self --> while prmpt asked for new game, If user click on "X" to stop got destroy error.
+# When there is collision border or self --> while prmpt asked for new game, If user click on "X" to stop got destroy error.    [ Done !! ]
 
-# if is there a collision border of self the game beraks some seconds  at game over screen. If user press on "X" while this breaks 
+# if is there a collision border of self, the game hangon some seconds at game-over screen. If user press on "X" while this hangin-on   [ Done !! ]
 # the game stops at the same window without give any hint for user that the game is stoped to make reaction.
