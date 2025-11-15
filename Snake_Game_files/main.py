@@ -81,7 +81,7 @@ def show_start_screen(window):
 
     # Ensure display updates and pause so the player can read the message
     window.update()
-    sleep(3)
+    sleep(1)
     t.clear()
 
 # Displays the end message 
@@ -140,7 +140,7 @@ def main():
             WRITE_MESSAGE.write("Enter only numbers [ from 10 to 20 ]", align="center", font=("Arial", 15, "italic"))
 
             WINDOW.update()
-            sleep(3)
+            sleep(1.5)
             WRITE_MESSAGE.clear()
 
             speed = WINDOW.textinput("Speed of Snake!", "Enter speed of snake from [ 10 to 20 ] <<<||")
@@ -211,7 +211,7 @@ def main():
 
             game_on = False
 
-            sleep(2)
+            sleep(0.3)
 
             snake.hide_snake()
             score.hide_score()
@@ -233,7 +233,7 @@ def main():
 
                     game_on = False
 
-                    sleep(2)
+                    sleep(0.3)
 
                     snake.hide_snake()
                     score.hide_score()
@@ -293,7 +293,7 @@ if main(): # main returns a value of [ is_on_close() ]
                 WRITE_MESSAGE.write(f"Invalid entry: [ {new_game} ]\nEnter [ Y or N ]", align="center", font=("Arial", 15, "italic"))
                 WINDOW.update()
 
-                sleep(3)
+                sleep(1.3)
                 WRITE_MESSAGE.clear()
 
         else:

@@ -154,7 +154,6 @@ class Score(Turtle):
         window.update()
 
         # Pause briefly so the player can see the game-over screen
-        time.sleep(2)
     
 
     # Hide the score of screen
